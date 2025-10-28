@@ -6,4 +6,7 @@ protobuf>=4.0.0
 safetensors
 transformers==4.37.2
 accelerate==0.28.0
-torch
+
+# Penting: ambil wheel PyTorch CPU dari repo resmi
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2+cpu
