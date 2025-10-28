@@ -1,14 +1,12 @@
-streamlit>=1.30
-numpy>=1.23
+streamlit==1.39.0
+numpy<2.0,>=1.23
 pandas>=2.0
-scikit-learn
+scikit-learn==1.4.2
 protobuf>=4.0.0
 safetensors
 transformers==4.37.2
 accelerate==0.28.0
 
-# --- Tambahan penting untuk PyTorch di Streamlit Cloud (CPU only) ---
-# --extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.4.1+cpu
-torchvision==0.19.1+cpu
-torchaudio==2.4.1+cpu
+# PyTorch CPU wheels
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2+cpu
