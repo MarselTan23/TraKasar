@@ -8,7 +8,7 @@ transformers==4.37.2
 accelerate==0.28.0
 
 # --- Tambahan penting untuk PyTorch di Streamlit Cloud (CPU only) ---
---extra-index-url https://download.pytorch.org/whl/cpu
+# --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.4.1+cpu
 torchvision==0.19.1+cpu
 torchaudio==2.4.1+cpu
