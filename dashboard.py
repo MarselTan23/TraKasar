@@ -6,9 +6,12 @@ import torch
 import streamlit as st
 import textwrap
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import pandas as pd
+import io
+import json
 
-# ================== KONFIGURASI MODEL ==================
-MODEL_DIR = os.getenv("MODEL_DIR", "model_nusa_multi_label/model_nusa_multi_label")  # folder model
+# KONFIGURASI MODEL 
+MODEL_DIR = MODEL_DIR = os.getenv("MODEL_DIR", "model_nusa_multi_label/model_nusa_multi_label")
 MAX_LEN   = 128
 DEVICE    = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -16,7 +19,7 @@ DEVICE    = "cuda" if torch.cuda.is_available() else "cpu"
 LABELS = ["Ujaran Kebencian", "Abusive", "Ujaran Kebencian Agama", "Rasist"]
 
 
-# ================== FUNGSI UTILITAS ==================
+# FUNGSI UTILITAS 
 def load_css(file_name: str):
     """Membaca file CSS lokal dan menginjeksikannya ke dalam <style> tag."""
     try:
@@ -79,11 +82,11 @@ def predict_multilabel(texts, threshold=0.5):
         })
     return results
 
-# ================== KONFIGURASI HALAMAN ==================
+# KONFIGURASI HALAMAN 
 st.set_page_config(page_title="TraKasar – Deteksi Ujaran Kebencian", page_icon="🤖", layout="wide")
 load_css("style.css")
 
-# ================== STATE & NAV ==================
+# STATE & NAV 
 if "page" not in st.session_state:
     st.session_state.page = "Beranda"
 
@@ -103,7 +106,6 @@ try:
 except FileNotFoundError:
     logo_untar_html = '<span class="untar-text">UNTAR</span>'
 
-# helper untuk embed gambar lokal jadi base64 (aman untuk <img>/CSS inline)
 def img_b64(path):
     try:
         with open(path, "rb") as f:
@@ -111,13 +113,12 @@ def img_b64(path):
     except FileNotFoundError:
         return None
 
-# siapkan base64 
+
 MARCHELINO_IMG = img_b64("marchelino.jpeg")
 VINY_IMG       = img_b64("Viny-Christanti.jpg")
 SEKPRODI_IMG   = img_b64("Sekprodi-FTI.jpg")
 
 # --- Navbar ---
-# navbtn mengembalikan HTML SATU BARIS (tanpa indentasi)
 def navbtn(label: str) -> str:
     active = "active" if st.session_state.page == label else ""
     return f'<form class="navform" method="get"><input type="hidden" name="page" value="{label}"><button class="navbtn {active}" type="submit">{label}</button></form>'
@@ -130,7 +131,7 @@ links_html = "".join([
     navbtn("Bantuan"),
 ])
 
-# string HTML tanpa indent 
+# string HTML
 nav_html = (
     '<div class="navbar">'
       '<div class="nav-inner">'
@@ -144,7 +145,7 @@ nav_html = (
 # render dengan markdown + unsafe_allow_html
 st.markdown(nav_html, unsafe_allow_html=True)
 
-# ================== HALAMAN ==================
+# HALAMAN 
 page = st.session_state.page
 
 # beri atribut ke <body> agar bisa ditarget CSS per-halaman
@@ -210,7 +211,6 @@ elif page == "Deteksi":
     if "detect_text" not in st.session_state:
         st.session_state.detect_text = ""
     
-    # callback untuk tombol Bersihkan
     def on_reset():
         st.session_state.detect_text = ""          
         st.session_state.result_detect = None      
@@ -245,6 +245,54 @@ elif page == "Deteksi":
                         [{"Label": k, "Prob": v} for k, v in result["probs"].items()]
                     ).sort_values("Prob", ascending=False, ignore_index=True)
                     st.dataframe(df, use_container_width=True)
+                
+                # >>> DOWNLOAD BLOCK (INPUT + PROBABILITAS)
+                               # DataFrame probabilitas
+                df_probs = pd.DataFrame(
+                    [{"Label": k, "Probabilitas": v} for k, v in result["probs"].items()]
+                ).sort_values("Probabilitas", ascending=False, ignore_index=True)
+
+                # ================= JSON =================
+                output_dict = {
+                    "kalimat_input": text,
+                    "label_terdeteksi": result["preds"],
+                    "semua_skor": result["probs"]
+                }
+                json_string = json.dumps(output_dict, indent=4, ensure_ascii=False)
+
+                st.download_button(
+                    label="💾 Download Hasil (JSON)",
+                    data=json_string,
+                    file_name="hasil_deteksi.json",
+                    mime="application/json"
+                )
+
+                # ================= CSV =================
+                csv_buffer = io.StringIO()
+                df_probs.to_csv(csv_buffer, index=False)
+                csv_data = f"Kalimat Input:,{text}\n" + csv_buffer.getvalue()
+
+                st.download_button(
+                    label="📥 Download Hasil (CSV)",
+                    data=csv_data,
+                    file_name="hasil_deteksi.csv",
+                    mime="text/csv"
+                )
+
+                # ================= TXT =================
+                txt_output = f"Kalimat Input:\n{text}\n\nLabel Terdeteksi:\n"
+                if len(result["preds"]) == 0:
+                    txt_output += "(Tidak ada label melewati threshold)\n"
+                else:
+                    for label, prob in result["preds"]:
+                        txt_output += f"- {label}: {prob:.4f}\n"
+
+                st.download_button(
+                    label="📝 Download Ringkas (TXT)",
+                    data=txt_output,
+                    file_name="hasil_deteksi.txt",
+                    mime="text/plain"
+                )
 
 elif page == "Tentang":
     st.markdown("""
@@ -254,7 +302,6 @@ elif page == "Tentang":
     </section>
     """, unsafe_allow_html=True)
 
-    # Card "Mengenal lebih jauh TraKasar?"
     st.markdown("""
     <div class="about-card">
       <div class="about-left">
@@ -266,7 +313,6 @@ elif page == "Tentang":
     </div>
     """, unsafe_allow_html=True)
 
-    # Kartu profil pengembang 
     st.markdown(f"""
     <div class="profile-card">
       <div class="profile-photo" style="background-image:url('{MARCHELINO_IMG or ""}');"></div>
@@ -279,7 +325,6 @@ elif page == "Tentang":
     </div>
     """, unsafe_allow_html=True)
 
-    # Section pembimbing 
     st.markdown(f"""
     <h3 class="section-title">Dosen Pembimbing</h3>
     <div class="mentors-grid">
@@ -297,7 +342,6 @@ elif page == "Tentang":
     """, unsafe_allow_html=True)
 
 else:  # Bantuan
-    # --- layout Bantuan ---
     st.markdown(
         """
         <h1 class="help-title">Cara Menggunakan TraKasar</h1>
