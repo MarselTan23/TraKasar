@@ -1,14 +1,53 @@
 # TRAKASAR
 **Transformer-based Hate Speech Detection System for Papuan Language**
 
-TRAKASAR adalah aplikasi berbasis web yang dikembangkan untuk mendeteksi ujaran kebencian pada teks berbahasa Indonesia dan Bahasa Papua Umum dengan memanfaatkan model NusaBERT berbasis arsitektur Transformer (encoder-only). Aplikasi ini dirancang sebagai prototype sistem deteksi ujaran kebencian dalam konteks multibahasa lokal Indonesia.
+**TraKasar** adalah aplikasi berbasis web yang dikembangkan untuk mendeteksi ujaran kebencian berbahasa Indonesia dengan fokus pada konteks ujaran terhadap warga Papua.  
+Aplikasi ini menggunakan model **Transformer (encoder-only)** yang telah di-*fine-tuning* untuk tugas **multi-label classification**, sehingga satu kalimat dapat memiliki lebih dari satu kategori ujaran kebencian.
 
-## Fitur Utama
-- Deteksi ujaran kebencian secara otomatis
-- Mendukung teks Bahasa Indonesia dan Bahasa Papua Umum
-- Menggunakan model Fine-Tuning NusaBERT
-- Backend berbasis FastAPI
-- Antarmuka web sederhana dan mudah digunakan
+Aplikasi dibangun menggunakan **Streamlit** sebagai antarmuka web dan **PyTorch + Hugging Face Transformers** sebagai backend model inferensi.
+
+---
+
+## 🎯 Tujuan Pengembangan
+TraKasar bertujuan untuk:
+- Membantu proses **moderasi konten digital**
+- Mengurangi penyebaran ujaran kebencian di ruang publik daring
+- Mendukung lingkungan digital yang **inklusif dan aman**
+
+---
+
+## 🚀 Fitur Utama
+- 🔍 **Deteksi ujaran kebencian berbasis teks**
+- 🏷️ **Multi-label classification** (satu teks bisa memiliki banyak label)
+- 🎚️ **Pengaturan threshold probabilitas**
+- 📊 **Menampilkan skor probabilitas seluruh label**
+- 💾 **Unduh hasil deteksi** dalam format:
+  - JSON
+  - CSV
+  - TXT
+- 🖥️ **Antarmuka web interaktif** berbasis Streamlit
+
+---
+
+## 🧠 Label Klasifikasi
+Model TraKasar mendeteksi beberapa kategori ujaran kebencian, antara lain:
+
+- Ujaran Kebencian  
+- Abusive  
+- Ujaran Kebencian Agama  
+- Rasist  
+
+---
+
+## 🧩 Arsitektur & Teknologi
+- **Bahasa Pemrograman**: Python  
+- **Framework UI**: Streamlit  
+- **Model NLP**: Transformer (NusaBERT-based)  
+- **Library Utama**:
+  - `torch`
+  - `transformers`
+  - `numpy`
+  - `pandas`
 
 ## Struktur Folder
 Seluruh file dan folder harus berada dalam satu direktori utama proyek.
